@@ -67,3 +67,34 @@ export const login = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getMe = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ status: 'fail', message: 'Unauthorized' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ status: 'fail', message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: { user },
+    });
+  } catch (error: any) {
+    console.error('Get profile error:', error);
+    return res.status(500).json({ status: 'error', message: 'Failed to fetch user profile' });
+  }
+};
