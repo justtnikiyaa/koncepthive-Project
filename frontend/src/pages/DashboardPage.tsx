@@ -310,21 +310,15 @@ export const DashboardPage: React.FC = () => {
       <style>{`
         .dashboard-app-wrapper {
           min-height: 100vh;
+          width: 100%;
           background: var(--bg-main);
           display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
         }
 
         .app-window-container {
           width: 100%;
-          max-width: 1320px;
-          min-height: 840px;
+          min-height: 100vh;
           background: var(--bg-main);
-          border: 1px solid var(--border-color);
-          border-radius: 24px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
           display: flex;
           overflow: hidden;
         }
