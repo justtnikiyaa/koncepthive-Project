@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes';
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ app.get('/api/health', (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
 
 // 404 Route Handler
 app.use((req: Request, res: Response) => {
