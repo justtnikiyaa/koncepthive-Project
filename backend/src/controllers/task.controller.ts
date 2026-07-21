@@ -2,6 +2,105 @@ import { Request, Response } from 'express';
 import prisma from '../config/prisma';
 import { createTaskSchema, updateTaskSchema } from '../validators/task.validator';
 
+// Get all tasks with search, filtering, and sorting
+export const getTasks = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ status: 'fail', message: 'Unauthorized' });
+    }
+
+    const { search, status, priority, sort } = req.query;
+
+    // Build Prisma query filters
+    const where: any = {
+      userId: req.user.userId,
+    };
+
+    // 1. Search by Task Title
+    if (search && typeof search === 'string' && search.trim() !== '') {
+      where.title = {
+        contains: search.trim(),
+      };
+    }
+
+    // 2. Filter by Status
+    if (status && typeof status === 'string' && status.trim() !== '') {
+      where.status = status.trim();
+    }
+
+    // 3. Filter by Priority
+    if (priority && typeof priority === 'string' && priority.trim() !== '') {
+      where.priority = priority.trim();
+    }
+
+    // 4. Sorting logic
+    let orderBy: any = { createdAt: 'desc' }; // Default: Newest Created
+    if (sort === 'oldest') {
+      orderBy = { createdAt: 'asc' };
+    } else if (sort === 'dueDate') {
+      orderBy = { dueDate: 'asc' };
+    } else if (sort === 'newest') {
+      orderBy = { createdAt: 'desc' };
+    }
+
+    const tasks = await prisma.task.findMany({
+      where,
+      orderBy,
+    });
+
+    return res.status(200).json({
+      status: 'success',
+      results: tasks.length,
+      data: { tasks },
+    });
+  } catch (error: any) {
+    console.error('Get tasks error:', error);
+    return res.status(500).json({ status: 'error', message: 'Failed to fetch tasks' });
+  }
+};
+
+// Get Dashboard Summary Statistics
+export const getTaskStats = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ status: 'fail', message: 'Unauthorized' });
+    }
+
+    const userId = req.user.userId;
+    const now = new Date();
+
+    const [total, pending, inProgress, completed, overdue] = await Promise.all([
+      prisma.task.count({ where: { userId } }),
+      prisma.task.count({ where: { userId, status: 'Pending' } }),
+      prisma.task.count({ where: { userId, status: 'In Progress' } }),
+      prisma.task.count({ where: { userId, status: 'Completed' } }),
+      prisma.task.count({
+        where: {
+          userId,
+          status: { not: 'Completed' },
+          dueDate: { lt: now },
+        },
+      }),
+    ]);
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        stats: {
+          total,
+          pending,
+          inProgress,
+          completed,
+          overdue,
+        },
+      },
+    });
+  } catch (error: any) {
+    console.error('Get task stats error:', error);
+    return res.status(500).json({ status: 'error', message: 'Failed to fetch task dashboard stats' });
+  }
+};
+
 // Create a new task
 export const createTask = async (req: Request, res: Response) => {
   try {

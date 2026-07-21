@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import {
+  getTasks,
+  getTaskStats,
   createTask,
   getTaskById,
   updateTask,
@@ -12,6 +14,8 @@ const router = Router();
 // Protect all task routes
 router.use(authenticateToken);
 
+router.get('/', getTasks);
+router.get('/stats/summary', getTaskStats);
 router.post('/', createTask);
 router.get('/:id', getTaskById);
 router.put('/:id', updateTask);
