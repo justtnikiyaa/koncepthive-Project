@@ -1,5 +1,5 @@
 import React from 'react';
-import { TaskStats } from '../types';
+import type { TaskStats } from '../types';
 import { Layers, Clock, Loader, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface DashboardStatsProps {

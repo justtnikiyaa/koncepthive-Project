@@ -1,5 +1,5 @@
 import api from './client';
-import { Task, TaskStats, TaskFilterParams } from '../types';
+import type { Task, TaskStats, TaskFilterParams } from '../types';
 
 export const getTasksApi = async (params?: TaskFilterParams): Promise<{ status: string; data: { tasks: Task[] } }> => {
   const response = await api.get('/tasks', { params });

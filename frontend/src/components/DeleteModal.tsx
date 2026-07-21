@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Task } from '../types';
+import type { Task } from '../types';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DeleteModalProps {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Task, Priority, TaskStatus } from '../types';
+import type { Task, Priority, TaskStatus } from '../types';
 import { X, Calendar, Type, FileText, AlertCircle, Loader2 } from 'lucide-react';
 
 interface TaskModalProps {
