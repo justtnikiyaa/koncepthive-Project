@@ -23,6 +23,7 @@ import {
   CheckCircle,
   AlertCircle,
   Inbox,
+  Menu,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -32,6 +33,7 @@ export const DashboardPage: React.FC = () => {
   const [stats, setStats] = useState<TaskStats | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Filters & Search & Sort
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,6 +170,8 @@ export const DashboardPage: React.FC = () => {
             setTaskToEdit(null);
             setIsTaskModalOpen(true);
           }}
+          isMobileOpen={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
 
         {/* Main Content Area */}
@@ -175,6 +179,14 @@ export const DashboardPage: React.FC = () => {
           {/* Top Header */}
           <header className="top-header-bar">
             <div className="user-profile-meta">
+              <button
+                className="mobile-menu-trigger"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                title="Open Navigation Menu"
+              >
+                <Menu size={22} />
+              </button>
+
               <div className="avatar-circle">
                 <User size={18} />
               </div>
@@ -195,7 +207,7 @@ export const DashboardPage: React.FC = () => {
 
               <button onClick={logout} className="header-signout-btn">
                 <LogOut size={16} />
-                <span>Sign Out</span>
+                <span className="signout-label">Sign Out</span>
               </button>
             </div>
           </header>
@@ -262,7 +274,7 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Task Grid (3 Columns) */}
+            {/* Task Grid (3 Columns Desktop -> 2 Columns Tablet -> 1 Column Mobile) */}
             {isLoading ? (
               <div className="loading-state-box">
                 <p>Loading tasks...</p>
@@ -345,6 +357,7 @@ export const DashboardPage: React.FC = () => {
           flex-direction: column;
           background: var(--bg-main);
           overflow: hidden;
+          min-width: 0;
         }
 
         .top-header-bar {
@@ -356,10 +369,19 @@ export const DashboardPage: React.FC = () => {
           background: var(--bg-card);
         }
 
+        .mobile-menu-trigger {
+          display: none;
+          color: var(--text-primary);
+          padding: 6px;
+          border-radius: 8px;
+          background: var(--bg-main);
+          border: 1px solid var(--border-color);
+        }
+
         .user-profile-meta {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
 
         .avatar-circle {
@@ -447,6 +469,7 @@ export const DashboardPage: React.FC = () => {
           gap: 16px;
           margin-bottom: 20px;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          flex-wrap: wrap;
         }
 
         .search-input-box {
@@ -454,7 +477,7 @@ export const DashboardPage: React.FC = () => {
           display: flex;
           align-items: center;
           flex: 1;
-          max-width: 360px;
+          min-width: 220px;
         }
 
         .search-icon-input {
@@ -486,6 +509,7 @@ export const DashboardPage: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 12px;
+          flex-wrap: wrap;
         }
 
         .control-select-dropdown {
@@ -523,18 +547,6 @@ export const DashboardPage: React.FC = () => {
           grid-template-columns: repeat(3, 1fr);
           gap: 18px;
           flex: 1;
-        }
-
-        @media (max-width: 1024px) {
-          .tasks-three-column-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (max-width: 640px) {
-          .tasks-three-column-grid {
-            grid-template-columns: 1fr;
-          }
         }
 
         .dashboard-footer-bar {
@@ -577,6 +589,61 @@ export const DashboardPage: React.FC = () => {
           background: var(--bg-card);
           border: 1px dashed var(--border-color);
           border-radius: 16px;
+        }
+
+        /* RESPONSIVE MEDIA QUERIES FOR DESKTOP, TABLET & MOBILE */
+        @media (max-width: 1100px) {
+          .tasks-three-column-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 900px) {
+          .mobile-menu-trigger {
+            display: flex;
+          }
+
+          .top-header-bar {
+            padding: 14px 18px;
+          }
+
+          .content-scroll-area {
+            padding: 18px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .tasks-three-column-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .filter-controls-card {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .search-input-box {
+            max-width: 100%;
+          }
+
+          .filter-controls-right {
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .control-select-dropdown {
+            flex: 1;
+          }
+
+          .control-new-task-btn {
+            width: 100%;
+            justify-content: center;
+            margin-top: 4px;
+          }
+
+          .signout-label {
+            display: none;
+          }
         }
       `}</style>
     </div>
