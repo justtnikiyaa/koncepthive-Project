@@ -15,8 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'active', label: 'Active Tasks', icon: ListTodo },
-    { id: 'history', label: 'History', icon: History },
-    { id: 'team', label: 'Team', icon: Users },
+    { id: 'history', label: 'Completed History', icon: History },
   ];
 
   return (

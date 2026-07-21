@@ -96,7 +96,17 @@ export const DashboardPage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [searchQuery, statusFilter, priorityFilter, sortOption]);
+  }, [searchQuery, statusFilter, priorityFilter, sortOption, activeNav]);
+
+  const displayedTasks = tasks.filter((t) => {
+    if (activeNav === 'active') {
+      return t.status !== 'Completed';
+    }
+    if (activeNav === 'history') {
+      return t.status === 'Completed';
+    }
+    return true;
+  });
 
   // Handle Save Task (Create or Update)
   const handleSaveTask = async (taskData: {
@@ -257,15 +267,21 @@ export const DashboardPage: React.FC = () => {
               <div className="loading-state-box">
                 <p>Loading tasks...</p>
               </div>
-            ) : tasks.length === 0 ? (
+            ) : displayedTasks.length === 0 ? (
               <div className="empty-state-box animate-fade-in">
                 <Inbox size={40} className="empty-icon" />
                 <h4>No tasks found</h4>
-                <p>Try adjusting your search or filters.</p>
+                <p>
+                  {activeNav === 'active'
+                    ? 'No active tasks found.'
+                    : activeNav === 'history'
+                    ? 'No completed tasks in history yet.'
+                    : 'Try adjusting your search or filters.'}
+                </p>
               </div>
             ) : (
               <div className="tasks-three-column-grid">
-                {tasks.map((task) => (
+                {displayedTasks.map((task) => (
                   <TaskCard
                     key={task.id}
                     task={task}
