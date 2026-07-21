@@ -8,6 +8,7 @@ import {
   updateTaskApi,
   deleteTaskApi,
 } from '../api/tasks.api';
+import { Sidebar } from '../components/Sidebar';
 import { DashboardStats } from '../components/DashboardStats';
 import { TaskCard } from '../components/TaskCard';
 import { TaskModal } from '../components/TaskModal';
@@ -15,11 +16,10 @@ import { DeleteModal } from '../components/DeleteModal';
 import {
   Search,
   Plus,
-  Filter,
-  ArrowUpDown,
-  Sun,
   Moon,
+  Sun,
   LogOut,
+  User,
   CheckCircle,
   AlertCircle,
   Inbox,
@@ -28,6 +28,7 @@ import {
 export const DashboardPage: React.FC = () => {
   const { user, logout } = useAuth();
 
+  const [activeNav, setActiveNav] = useState('dashboard');
   const [stats, setStats] = useState<TaskStats | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +37,7 @@ export const DashboardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
-  const [sortOption, setSortOption] = useState<'newest' | 'oldest' | 'dueDate'>('newest');
+  const [sortOption] = useState<'newest' | 'oldest' | 'dueDate'>('newest');
 
   // Dark mode state
   const [darkMode, setDarkMode] = useState(() => {
@@ -138,7 +139,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-app-wrapper">
       {/* Toast Notification */}
       {toastMessage && (
         <div className={`toast-notification animate-fade-in ${toastMessage.type}`}>
@@ -147,165 +148,150 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="header-left">
-          <div className="app-logo">K</div>
-          <div>
-            <h2>Task Management</h2>
-            <p className="welcome-text">Welcome back, <strong>{user?.name || 'User'}</strong></p>
-          </div>
-        </div>
-
-        <div className="header-right">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="theme-toggle-btn"
-            title="Toggle Light/Dark Theme"
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-
-          <button onClick={logout} className="logout-btn" title="Sign Out">
-            <LogOut size={18} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="dashboard-main">
-        {/* Metric Cards Summary */}
-        <DashboardStats
-          stats={stats}
-          activeFilterStatus={statusFilter}
-          onSelectStatusFilter={(st) => setStatusFilter(st)}
+      {/* Main Container Window */}
+      <div className="app-window-container">
+        {/* Left Sidebar */}
+        <Sidebar
+          activeNav={activeNav}
+          setActiveNav={setActiveNav}
+          onNewTask={() => {
+            setTaskToEdit(null);
+            setIsTaskModalOpen(true);
+          }}
         />
 
-        {/* Toolbar (Search, Filter, Sort, Add) */}
-        <div className="toolbar">
-          <div className="toolbar-left">
-            {/* Search Input */}
-            <div className="search-box">
-              <Search size={18} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search by title..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="clear-search">
-                  ×
-                </button>
-              )}
+        {/* Main Content Area */}
+        <div className="app-main-content">
+          {/* Top Header */}
+          <header className="top-header-bar">
+            <div className="user-profile-meta">
+              <div className="avatar-circle">
+                <User size={18} />
+              </div>
+              <div className="user-text-info">
+                <span className="welcome-label">Welcome back,</span>
+                <span className="user-display-name">{user?.name || 'System Admin'}</span>
+              </div>
             </div>
 
-            {/* Status Filter */}
-            <div className="filter-select-wrapper">
-              <Filter size={16} className="filter-icon" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Completed">Completed</option>
-              </select>
-            </div>
-
-            {/* Priority Filter */}
-            <div className="filter-select-wrapper">
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-                className="filter-select"
-              >
-                <option value="">All Priorities</option>
-                <option value="High">High Priority</option>
-                <option value="Medium">Medium Priority</option>
-                <option value="Low">Low Priority</option>
-              </select>
-            </div>
-
-            {/* Sort Select */}
-            <div className="filter-select-wrapper">
-              <ArrowUpDown size={16} className="filter-icon" />
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as any)}
-                className="filter-select"
-              >
-                <option value="newest">Sort: Newest Created</option>
-                <option value="oldest">Sort: Oldest Created</option>
-                <option value="dueDate">Sort: Due Date</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              setTaskToEdit(null);
-              setIsTaskModalOpen(true);
-            }}
-            className="new-task-btn"
-          >
-            <Plus size={18} />
-            <span>New Task</span>
-          </button>
-        </div>
-
-        {/* Task Grid */}
-        {isLoading ? (
-          <div className="loading-state">
-            <p>Loading your tasks...</p>
-          </div>
-        ) : tasks.length === 0 ? (
-          <div className="empty-state animate-fade-in">
-            <Inbox size={48} className="empty-icon" />
-            <h3>No tasks found</h3>
-            <p>
-              {searchQuery || statusFilter || priorityFilter
-                ? 'Try adjusting your search query or filters.'
-                : 'Get started by creating your first task!'}
-            </p>
-            {(searchQuery || statusFilter || priorityFilter) && (
+            <div className="top-header-actions">
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setStatusFilter('');
-                  setPriorityFilter('');
-                }}
-                className="reset-filters-btn"
+                onClick={() => setDarkMode(!darkMode)}
+                className="header-icon-btn"
+                title="Toggle Theme"
               >
-                Reset All Filters
+                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
-            )}
-          </div>
-        ) : (
-          <div className="task-grid">
-            {tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onEdit={(t) => {
-                  setTaskToEdit(t);
-                  setIsTaskModalOpen(true);
-                }}
-                onDelete={(t) => {
-                  setTaskToDelete(t);
-                  setIsDeleteModalOpen(true);
-                }}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
-          </div>
-        )}
-      </main>
 
-      {/* Task Create / Edit Modal */}
+              <button onClick={logout} className="header-signout-btn">
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </header>
+
+          {/* Main Dashboard Section */}
+          <div className="content-scroll-area">
+            {/* Top Metric Stats Cards */}
+            <DashboardStats
+              stats={stats}
+              activeFilterStatus={statusFilter}
+              onSelectStatusFilter={(st) => setStatusFilter(st)}
+            />
+
+            {/* Filter & Controls Card */}
+            <div className="filter-controls-card">
+              <div className="search-input-box">
+                <Search size={16} className="search-icon-input" />
+                <input
+                  type="text"
+                  placeholder="Search by title..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="clear-search-btn">
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <div className="filter-controls-right">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="control-select-dropdown"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                </select>
+
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="control-select-dropdown"
+                >
+                  <option value="">All Priorities</option>
+                  <option value="High">High Priority</option>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+
+                <button
+                  onClick={() => {
+                    setTaskToEdit(null);
+                    setIsTaskModalOpen(true);
+                  }}
+                  className="control-new-task-btn"
+                >
+                  <Plus size={16} />
+                  <span>New Task</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Task Grid (3 Columns) */}
+            {isLoading ? (
+              <div className="loading-state-box">
+                <p>Loading tasks...</p>
+              </div>
+            ) : tasks.length === 0 ? (
+              <div className="empty-state-box animate-fade-in">
+                <Inbox size={40} className="empty-icon" />
+                <h4>No tasks found</h4>
+                <p>Try adjusting your search or filters.</p>
+              </div>
+            ) : (
+              <div className="tasks-three-column-grid">
+                {tasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onEdit={(t) => {
+                      setTaskToEdit(t);
+                      setIsTaskModalOpen(true);
+                    }}
+                    onDelete={(t) => {
+                      setTaskToDelete(t);
+                      setIsDeleteModalOpen(true);
+                    }}
+                    onStatusChange={handleStatusChange}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Page Footer */}
+            <footer className="dashboard-footer-bar">
+              <span>© 2024 Task Management Enterprise. All rights reserved.</span>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      {/* Task Modal */}
       <TaskModal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
@@ -322,185 +308,181 @@ export const DashboardPage: React.FC = () => {
       />
 
       <style>{`
-        .dashboard-container {
+        .dashboard-app-wrapper {
           min-height: 100vh;
           background: var(--bg-main);
-          color: var(--text-primary);
-        }
-
-        .toast-notification {
-          position: fixed;
-          bottom: 24px;
-          right: 24px;
-          padding: 12px 20px;
-          border-radius: var(--radius-md);
           display: flex;
           align-items: center;
-          gap: 10px;
-          color: #ffffff;
-          font-weight: 600;
-          font-size: 14px;
-          box-shadow: var(--shadow-lg);
-          z-index: 2000;
+          justify-content: center;
+          padding: 24px;
         }
 
-        .toast-notification.success {
-          background: #10b981;
+        .app-window-container {
+          width: 100%;
+          max-width: 1320px;
+          min-height: 840px;
+          background: var(--bg-main);
+          border: 1px solid var(--border-color);
+          border-radius: 24px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+          display: flex;
+          overflow: hidden;
         }
 
-        .toast-notification.error {
-          background: #ef4444;
+        .app-main-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background: var(--bg-main);
+          overflow: hidden;
         }
 
-        .dashboard-header {
-          background: var(--bg-card);
-          border-bottom: 1px solid var(--border-color);
-          padding: 16px 32px;
+        .top-header-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          padding: 16px 28px;
+          border-bottom: 1px solid var(--border-color);
+          background: var(--bg-card);
         }
 
-        .header-left {
+        .user-profile-meta {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 10px;
         }
 
-        .app-logo {
-          width: 40px;
-          height: 40px;
-          border-radius: 12px;
-          background: var(--primary-color);
-          color: #ffffff;
-          font-weight: 800;
-          font-size: 20px;
+        .avatar-circle {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: var(--bg-card-hover);
+          color: var(--text-secondary);
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .header-left h2 {
-          font-size: 18px;
-          font-weight: 800;
-          line-height: 1.2;
+        .user-text-info {
+          display: flex;
+          flex-direction: column;
         }
 
-        .welcome-text {
-          font-size: 13px;
-          color: var(--text-secondary);
+        .welcome-label {
+          font-size: 11px;
+          color: var(--text-muted);
         }
 
-        .header-right {
+        .user-display-name {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .top-header-actions {
           display: flex;
           align-items: center;
           gap: 12px;
         }
 
-        .theme-toggle-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: var(--radius-md);
-          background: var(--bg-main);
-          border: 1px solid var(--border-color);
-          color: var(--text-primary);
+        .header-icon-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          color: var(--text-secondary);
           display: flex;
           align-items: center;
           justify-content: center;
           transition: all 0.2s ease;
         }
 
-        .logout-btn {
-          padding: 8px 16px;
-          border-radius: var(--radius-md);
-          background: var(--bg-main);
+        .header-icon-btn:hover {
+          background: var(--bg-card-hover);
+        }
+
+        .header-signout-btn {
+          padding: 8px 14px;
+          border-radius: 8px;
           border: 1px solid var(--border-color);
-          color: var(--text-secondary);
+          background: var(--bg-card);
+          color: var(--text-primary);
           font-size: 13px;
           font-weight: 600;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
+          transition: all 0.2s ease;
         }
 
-        .logout-btn:hover {
-          color: #ef4444;
-          border-color: rgba(239, 68, 68, 0.3);
-          background: rgba(239, 68, 68, 0.05);
+        .header-signout-btn:hover {
+          background: var(--bg-card-hover);
         }
 
-        .dashboard-main {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 32px 24px;
+        .content-scroll-area {
+          flex: 1;
+          padding: 24px 28px;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
         }
 
-        .toolbar {
+        .filter-controls-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 14px 18px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          margin-bottom: 24px;
-          flex-wrap: wrap;
+          margin-bottom: 20px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
-        .toolbar-left {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-wrap: wrap;
-          flex: 1;
-        }
-
-        .search-box {
+        .search-input-box {
           position: relative;
           display: flex;
           align-items: center;
-          min-width: 220px;
           flex: 1;
+          max-width: 360px;
         }
 
-        .search-icon {
+        .search-icon-input {
           position: absolute;
-          left: 12px;
-          color: var(--text-muted);
-        }
-
-        .search-box input {
-          width: 100%;
-          padding: 10px 32px 10px 38px;
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          background: var(--bg-card);
-          color: var(--text-primary);
-          outline: none;
-        }
-
-        .clear-search {
-          position: absolute;
-          right: 12px;
-          font-size: 18px;
-          color: var(--text-muted);
-        }
-
-        .filter-select-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-
-        .filter-icon {
-          position: absolute;
-          left: 12px;
+          left: 14px;
           color: var(--text-muted);
           pointer-events: none;
         }
 
-        .filter-select {
-          padding: 10px 14px 10px 34px;
+        .search-input-box input {
+          width: 100%;
+          padding: 10px 14px 10px 38px;
           border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          background: var(--bg-card);
+          border-radius: 10px;
+          background: var(--bg-main);
+          color: var(--text-primary);
+          font-size: 13px;
+          outline: none;
+        }
+
+        .clear-search-btn {
+          position: absolute;
+          right: 12px;
+          font-size: 16px;
+          color: var(--text-muted);
+        }
+
+        .filter-controls-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .control-select-dropdown {
+          padding: 9px 14px;
+          border: 1px solid var(--border-color);
+          border-radius: 10px;
+          background: var(--bg-main);
           color: var(--text-primary);
           font-size: 13px;
           font-weight: 600;
@@ -508,69 +490,83 @@ export const DashboardPage: React.FC = () => {
           cursor: pointer;
         }
 
-        .new-task-btn {
-          padding: 10px 20px;
-          border-radius: var(--radius-md);
-          background: var(--primary-color);
+        .control-new-task-btn {
+          padding: 10px 18px;
+          border-radius: 10px;
+          background: #2563eb;
           color: #ffffff;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 700;
           display: flex;
           align-items: center;
-          gap: 8px;
-          box-shadow: var(--shadow-sm);
+          gap: 6px;
+          box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+          transition: all 0.2s ease;
         }
 
-        .new-task-btn:hover {
-          background: var(--primary-hover);
+        .control-new-task-btn:hover {
+          background: #1d4ed8;
         }
 
-        .task-grid {
+        .tasks-three-column-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 20px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 18px;
+          flex: 1;
         }
 
-        .empty-state {
+        @media (max-width: 1024px) {
+          .tasks-three-column-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .tasks-three-column-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .dashboard-footer-bar {
           text-align: center;
-          padding: 64px 20px;
+          padding-top: 28px;
+          margin-top: auto;
+          font-size: 12px;
+          color: var(--text-muted);
+          font-weight: 500;
+        }
+
+        .toast-notification {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          padding: 12px 20px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #ffffff;
+          font-weight: 600;
+          font-size: 14px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+          z-index: 2000;
+        }
+
+        .toast-notification.success {
+          background: #16a34a;
+        }
+
+        .toast-notification.error {
+          background: #dc2626;
+        }
+
+        .loading-state-box, .empty-state-box {
+          text-align: center;
+          padding: 48px 20px;
+          color: var(--text-muted);
           background: var(--bg-card);
           border: 1px dashed var(--border-color);
-          border-radius: var(--radius-lg);
-          margin-top: 20px;
-        }
-
-        .empty-icon {
-          color: var(--text-muted);
-          margin-bottom: 12px;
-        }
-
-        .empty-state h3 {
-          font-size: 18px;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .empty-state p {
-          font-size: 14px;
-          color: var(--text-secondary);
-          margin-top: 4px;
-          margin-bottom: 16px;
-        }
-
-        .reset-filters-btn {
-          padding: 8px 16px;
-          border-radius: var(--radius-md);
-          background: var(--primary-light);
-          color: var(--primary-color);
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-        .loading-state {
-          text-align: center;
-          padding: 48px;
-          color: var(--text-muted);
+          border-radius: 16px;
         }
       `}</style>
     </div>

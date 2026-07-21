@@ -1,6 +1,6 @@
 import React from 'react';
 import type { TaskStats } from '../types';
-import { Layers, Clock, Loader, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Layers, Clock, RotateCw, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface DashboardStatsProps {
   stats: TaskStats | null;
@@ -19,7 +19,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: 'Total Tasks',
       count: stats?.total ?? 0,
       icon: Layers,
-      colorClass: 'total',
+      iconBg: '#eff6ff',
+      iconColor: '#2563eb',
       statusFilter: '',
     },
     {
@@ -27,15 +28,17 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: 'Pending Tasks',
       count: stats?.pending ?? 0,
       icon: Clock,
-      colorClass: 'pending',
+      iconBg: '#f1f5f9',
+      iconColor: '#64748b',
       statusFilter: 'Pending',
     },
     {
       key: 'In Progress',
       title: 'In Progress Tasks',
       count: stats?.inProgress ?? 0,
-      icon: Loader,
-      colorClass: 'progress',
+      icon: RotateCw,
+      iconBg: '#e0e7ff',
+      iconColor: '#4f46e5',
       statusFilter: 'In Progress',
     },
     {
@@ -43,21 +46,23 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       title: 'Completed Tasks',
       count: stats?.completed ?? 0,
       icon: CheckCircle2,
-      colorClass: 'completed',
+      iconBg: '#dcfce7',
+      iconColor: '#16a34a',
       statusFilter: 'Completed',
     },
     {
       key: 'overdue',
       title: 'Overdue Tasks',
       count: stats?.overdue ?? 0,
-      icon: AlertTriangle,
-      colorClass: 'overdue',
-      statusFilter: '', // Overdue highlighted status
+      icon: AlertCircle,
+      iconBg: '#fee2e2',
+      iconColor: '#dc2626',
+      statusFilter: '',
     },
   ];
 
   return (
-    <div className="stats-grid">
+    <div className="stats-container-row">
       {cards.map((card) => {
         const IconComponent = card.icon;
         const isActive = activeFilterStatus === card.statusFilter && card.statusFilter !== '';
@@ -65,105 +70,101 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         return (
           <div
             key={card.key}
-            className={`stat-card ${card.colorClass} ${isActive ? 'active-filter' : ''}`}
+            className={`stat-card-item ${isActive ? 'active-filter' : ''}`}
             onClick={() => onSelectStatusFilter && card.statusFilter !== undefined && onSelectStatusFilter(card.statusFilter)}
           >
-            <div className="stat-icon-wrapper">
-              <IconComponent size={22} />
+            <div
+              className="stat-icon-box"
+              style={{ backgroundColor: card.iconBg, color: card.iconColor }}
+            >
+              <IconComponent size={20} />
             </div>
-            <div className="stat-content">
-              <span className="stat-title">{card.title}</span>
-              <span className="stat-value">{card.count}</span>
+            <div className="stat-text-meta">
+              <span className="stat-label">{card.title}</span>
+              <span className="stat-count-num">{card.count}</span>
             </div>
           </div>
         );
       })}
 
       <style>{`
-        .stats-grid {
+        .stats-container-row {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 16px;
-          margin-bottom: 24px;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 14px;
+          margin-bottom: 20px;
         }
 
-        .stat-card {
+        @media (max-width: 1100px) {
+          .stats-container-row {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+
+        @media (max-width: 768px) {
+          .stats-container-row {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .stats-container-row {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .stat-card-item {
           background: var(--bg-card);
           border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          padding: 20px;
+          border-radius: 14px;
+          padding: 16px 18px;
           display: flex;
-          align-items: center;
-          gap: 16px;
-          box-shadow: var(--shadow-sm);
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
           cursor: pointer;
           transition: all 0.2s ease;
         }
 
-        .stat-card:hover {
+        .stat-card-item:hover {
           transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
-          border-color: var(--border-focus);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          border-color: #2563eb;
         }
 
-        .stat-card.active-filter {
-          border-color: var(--primary-color);
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        .stat-card-item.active-filter {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
 
-        .stat-icon-wrapper {
-          width: 48px;
-          height: 48px;
-          border-radius: var(--radius-md);
+        .stat-icon-box {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
         }
 
-        .stat-content {
+        .stat-text-meta {
           display: flex;
           flex-direction: column;
         }
 
-        .stat-title {
-          font-size: 13px;
+        .stat-label {
+          font-size: 12px;
           color: var(--text-secondary);
           font-weight: 600;
         }
 
-        .stat-value {
-          font-size: 24px;
+        .stat-count-num {
+          font-size: 22px;
           font-weight: 800;
           color: var(--text-primary);
-          line-height: 1.2;
+          line-height: 1.1;
           margin-top: 2px;
-        }
-
-        /* Color Tints */
-        .stat-card.total .stat-icon-wrapper {
-          background: var(--primary-light);
-          color: var(--primary-color);
-        }
-
-        .stat-card.pending .stat-icon-wrapper {
-          background: var(--status-pending-bg);
-          color: var(--status-pending-text);
-        }
-
-        .stat-card.progress .stat-icon-wrapper {
-          background: var(--status-progress-bg);
-          color: var(--status-progress-text);
-        }
-
-        .stat-card.completed .stat-icon-wrapper {
-          background: var(--status-completed-bg);
-          color: var(--status-completed-text);
-        }
-
-        .stat-card.overdue .stat-icon-wrapper {
-          background: var(--status-overdue-bg);
-          color: var(--status-overdue-text);
         }
       `}</style>
     </div>
