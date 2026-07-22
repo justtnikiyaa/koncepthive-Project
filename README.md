@@ -114,3 +114,11 @@ Raw SQL export files are located in the `database/` directory:
 1. **Date Validation**: Tasks created or updated must have a `dueDate` of today or later (unless updating an existing past task).
 2. **Overdue Task Logic**: A task is categorized as "Overdue" when its `dueDate` is earlier than the current date and its status is not `'Completed'`.
 3. **Database Portability**: Prisma ORM is configured with SQLite for zero-config local testing, while remaining 100% compatible with PostgreSQL/MySQL by changing `DATABASE_URL` in `.env`.
+
+---
+
+## ⚠️ Known Limitations
+
+- Single user system (no registration by design, per assessment spec)
+- No refresh token implementation
+
