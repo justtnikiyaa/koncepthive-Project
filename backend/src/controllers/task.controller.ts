@@ -25,7 +25,13 @@ export const getTasks = async (req: Request, res: Response) => {
 
     // 2. Filter by Status
     if (status && typeof status === 'string' && status.trim() !== '') {
-      where.status = status.trim();
+      if (status.trim() === 'Overdue') {
+        const now = new Date();
+        where.status = { not: 'Completed' };
+        where.dueDate = { lt: now };
+      } else {
+        where.status = status.trim();
+      }
     }
 
     // 3. Filter by Priority

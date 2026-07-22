@@ -76,11 +76,12 @@ export const DashboardPage: React.FC = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
+      const effectiveStatusFilter = activeNav === 'overdue' ? 'Overdue' : statusFilter;
       const [statsRes, tasksRes] = await Promise.all([
         getTaskStatsApi(),
         getTasksApi({
           search: searchQuery,
-          status: statusFilter,
+          status: effectiveStatusFilter,
           priority: priorityFilter,
           sort: sortOption,
         }),
@@ -106,6 +107,10 @@ export const DashboardPage: React.FC = () => {
     }
     if (activeNav === 'history') {
       return t.status === 'Completed';
+    }
+    if (activeNav === 'overdue' || statusFilter === 'Overdue') {
+      const now = new Date();
+      return t.status !== 'Completed' && new Date(t.dueDate) < now;
     }
     return true;
   });
@@ -248,6 +253,7 @@ export const DashboardPage: React.FC = () => {
                   <option value="Pending">Pending</option>
                   <option value="In Progress">In Progress</option>
                   <option value="Completed">Completed</option>
+                  <option value="Overdue">Overdue</option>
                 </select>
 
                 <select

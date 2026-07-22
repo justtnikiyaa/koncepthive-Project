@@ -57,7 +57,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       icon: AlertCircle,
       iconBg: '#fee2e2',
       iconColor: '#dc2626',
-      statusFilter: '',
+      statusFilter: 'Overdue',
     },
   ];
 

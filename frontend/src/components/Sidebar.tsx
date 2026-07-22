@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutGrid, ListTodo, History, Plus, X } from 'lucide-react';
+import { LayoutGrid, ListTodo, History, Plus, X, AlertCircle } from 'lucide-react';
 
 interface SidebarProps {
   activeNav: string;
@@ -19,6 +19,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
     { id: 'active', label: 'Active Tasks', icon: ListTodo },
+    { id: 'overdue', label: 'Overdue Tasks', icon: AlertCircle },
     { id: 'history', label: 'Completed History', icon: History },
   ];
 
